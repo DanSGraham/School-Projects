@@ -8,9 +8,9 @@ c version 1.1 10/17/2014
 c Takes an array of size 101 and prepares it to act as a queue of
 c integers by setting every address of the array to the value -1
 c The head of the queue is not always array(1), but changes as items
-c are enqueued and dequeued. The queueH holds the index of the start
+c are enqueued and dequeued. The queueHead holds the index of the start
 c of the queue as it changes. The last item always comes before a -1
-c but theres is also a queueE that holds the index of the last item.
+c but theres is also a queueEnd that holds the index of the last item.
 c
 c Params: queue The 101 size array to use as a queue.
 
@@ -59,8 +59,8 @@ c array otherwise, it stops reading the file.
       end
 
 c Enqueues an integer to the queue array. If the queue already has 100
-c items, the subroutine sends a message. Changes the value of queueE to
-c match the updated end of the queue. 
+c items, the subroutine sends a message. Changes the value of queueEnd 
+c to match the updated end of the queue. 
 c
 c Params: queueTail Index of the next open space.
 c         queue Array that has been initialized to a queue.
@@ -90,7 +90,7 @@ c         queueSize Current size of the queue
 
 c Returns the integer at the head of the queue. If the 
 c queue is empty prints an error to the screen and returns -1. 
-c Decrements qSize.
+c Decrements queueSize.
 c
 c Params: queueHead Location of the item at the head of the queue.
 c         queue The queue array to dequeue from.
@@ -118,12 +118,11 @@ c         queueSize The current size of the queue array.
       return
       end
       
-c Uses radix sort to sort the integers in the 
-c queue by a specific place (10, 100, etc.)
-c Sorts by creating a temporary queue to sort into, then returning items
-c to the original queue in the sorted order.
+c Uses radix sort to sort the integers in the queue by a specific place 
+c (10, 100, etc.). Sorts by creating a temporary queue to sort into, 
+c then returning items to the original queue in the sorted order.
 c
-c Params: m The place to sort by.
+c Params: place The place to sort by.
 c         queue The queue array to sort.
 c         queueHead The index of the head of the queue array.
 c         queueTail Index of the next available location in queue
@@ -213,7 +212,7 @@ c the screen. Ignore tailing -1s.
      +  queueSize)
       call oneSort(1000, queue, queueHead, queueTail,
      +  queueSize)
-c I would have done the above as a loop, but is clearer as is.
+c I could have done the above as a loop, but is clearer as is.
 
       call printQueue(queueHead, queue, queueSize)
       
