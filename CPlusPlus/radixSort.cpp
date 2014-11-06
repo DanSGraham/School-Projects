@@ -18,7 +18,7 @@ using namespace std;
 
 /**
  * Implements a Node object with integers as values and a link to the 
- * next node in series. Will be used for the Queue implementation later.
+ * next Node in series. Will be used for the Queue implementation later.
  * */
 
 class Node{
@@ -76,7 +76,7 @@ Node* Node :: getLink(){
 /**
  * Returns the value stored in the Node.
  * 
- * @return value The value stored in the node.
+ * @return value The value stored in the Node.
  * */
 
 int Node :: getValue(){
@@ -84,7 +84,7 @@ int Node :: getValue(){
 }
 
 /**
- * Prints the value stored in the node to the screen.
+ * Prints the value stored in the Node to the screen.
  * */
 
 void Node :: print(){
@@ -103,8 +103,8 @@ void Node :: setLink(Node * nodeToLink){
 }
 
 /**
- * Implements an integer queue with the preceeding Node objects. Allows basic 
- * enqueue and dequeue options, but is limited to integers.
+ * Implements an integer queue with the preceeding Node objects. Allows 
+ * basic enqueue and dequeue options, but is limited to integers.
  * */
 
 class Queue{
