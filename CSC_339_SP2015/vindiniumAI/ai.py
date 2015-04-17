@@ -48,7 +48,10 @@ class AI:
     def pathDistanceTo(self, startingPos, endingPos):
         """calulates the distance the hero must travel to reach the ending pos using pathTo"""
 
-        return len(self.pathTo(startingPos, endingPos))
+        pathArray = self.pathTo(startingPos, [endingPos])
+        if pathArray == None:
+            return 9999999
+        return len(self.pathTo(startingPos, [endingPos]))
         
 
     def calcAction(self,startingPos,endingPos):
@@ -84,7 +87,7 @@ class AI:
         """
         #The only time the hero can move to a place is when the place is within the board, and either a blank space (" ") or herself (indicated by self.pos).
         if position[0] >= 0 and position[1] >= 0 and position[0] < self.game.board_size and (position[1]) < self.game.board_size and \
-           (self.game.board_map[position[0]][position[1]] == " " or position == self.game.hero.pos):
+           (self.game.board_map[position[0]][position[1]] == " " or self.game.board_map[position[0]][position[1]] == "X" or position in self.game.heroes_locs):
             return True
         else:
             return False
@@ -243,10 +246,10 @@ class AI:
     def pathTo(self, startingCoordinates, endCoordinates):
         """Returns the shortest path to the end coordinates using A* search. Hueristic is the euclidian distance."""
         #Unsure if the path must start with the startingCoordinate or if it can start with the first move.
-        pathArray = []
         aStarSearch = AStar(self.game.board_map, startingCoordinates, endCoordinates)
         pathEnd = aStarSearch.calcPath()
-        
+        if pathEnd == None:
+            return None
         return pathEnd.getRPath([])[::-1]
                     
         
@@ -317,14 +320,14 @@ class AI:
 
     def orderHerosByDistance(self):
         heroList = []
-        ownPosition = self.game.hero.getPos()
+        ownPosition = self.game.hero.pos
         for pHero in self.game.heroes:
-            if pHero.getPos() != ownPosition:
+            if pHero.pos != ownPosition:
                 if len(heroList) == 0:
                     heroList.append(pHero)
                 else:
                     for i in range(len(heroList)):
-                        if self.pathToDistance(ownPosition, pHero.getPos()) < self.pathToDistance(ownPosiiton, heroList[i]):
+                        if self.pathDistanceTo(ownPosition, pHero.pos) < self.pathDistanceTo(ownPosition, heroList[i].pos):
                             heroList.insert(i, pHero)
                     if not pHero in heroList:
                         heroList.append(pHero)
@@ -332,31 +335,45 @@ class AI:
 
     def orderTavernsByDistance(self):
         tavernList = []
-        ownPosition = self.game.hero.getPos()
+        ownPosition = self.game.hero.pos
         for pTav in self.game.taverns_locs:
             if len(tavernList) == 0:
                 tavernList.append(pTav)
             else:
                 for i in range(len(tavernList)):
-                    if self.pathToDistance(ownPosition, pTav) < self.pathToDistance(ownPosiiton, tavernList[i]):
+                    if self.pathDistanceTo(ownPosition, pTav) < self.pathDistanceTo(ownPosition, tavernList[i]):
                         tavernList.insert(i, pTav)
-                if not pTav in tavern:
+                if not pTav in tavernList:
                     tavernList.append(pTav)
+
+            if len(tavernList) >= 4:
+                tavernList = tavernList[0:4]
         return tavernList
 
     def orderUnownedMinesByDistance(self):
         mineList = []
-        ownPosition = self.game.hero.getPos()
+        ownPosition = self.game.hero.pos
         for pMine in self.game.mines_locs:
+                                
             if not pMine in self.game.hero.mines:
                 if len(mineList) == 0:
                     mineList.append(pMine)
                 else:
-                    for i in range(len(mineList)):
-                        if self.pathToDistance(ownPosition, pMine) < self.pathToDistance(ownPosiiton, mineList[i]):
-                            mineList.insert(i, pMine)
                     if not pMine in mineList:
-                        mineList.append(pMine)
+                        for i in range(len(mineList)):
+                            if self.pathDistanceTo(ownPosition, pMine) > 500 or self.pathDistanceTo(ownPosition, mineList[i]) > 500:
+                                print "Po mine position"
+                                print pMine
+                                self.printMap()
+                            if self.pathDistanceTo(ownPosition, pMine) < self.pathDistanceTo(ownPosition, mineList[i]):
+                                insertPoint = i
+                                mineList.insert(i, pMine)
+                                break
+                        if not pMine in mineList:
+                            mineList.append(pMine)
+            if len(mineList) >= 4:
+                mineList = mineList[0:4]
+                
         return mineList
             
 
@@ -379,76 +396,103 @@ class AI:
         orderHeros = self.orderHerosByDistance()
         orderTaverns = self.orderTavernsByDistance()
         orderMines = self.orderUnownedMinesByDistance()
-        inputList.append(ownHero.life)
-        inputList.append(ownHero.gold)
-        if ownHero.getPos() == ownHero.spawn_pos:
-            inputList.append(1)
-        else:
-            inputList.append(0)
+        inputList.append(ownHero.life)# / float(100))
+        inputList.append(ownHero.gold)# / float()
+        #if ownHero.pos == ownHero.spawn_pos:
+        #    inputList.append(1)
+        #else:
+        #    inputList.append(0)
 
-        inputList.append(ownHero.mineCount)
-        
-        if self.heroAtTavern(ownHero):
-            inputList.append(1)
-        else:
-            inputList.append(0)
+        inputList.append(ownHero.mine_count)
+        #
+        #if self.heroAtTavern(ownHero):
+        #    inputList.append(1)
+        #else:
+        #    inputList.append(0)
 
         for pHero in orderHeros:
-            inputList.append(self.pathToDistance(ownHero.getPos(), pHero.getPos()))
+            inputList.append(self.pathDistanceTo(ownHero.pos, pHero.pos))
             inputList.append(pHero.life)
             inputList.append(pHero.gold)
-            if pHero.getPos() == pHero.spawn_pos:
-                inputList.append(1)
-            else:
-                inputList.append(0)
+            #if pHero.pos == pHero.spawn_pos:
+            #    inputList.append(1)
+            #else:
+            #    inputList.append(0)
 
-            inputList.append(pHero.mineCount)
+            inputList.append(pHero.mine_count)
         
-            if self.heroAtTavern(pHero):
-                inputList.append(1)
-            else:
-                inputList.append(0)
-        for pTavern in orderTaverns:
-            inputList.append(self.pathToDistance(ownHero.getPos(), pTavern))
+            #if self.heroAtTavern(pHero):
+            #    inputList.append(1)
+            #else:
+            #    inputList.append(0)
 
         for pMine in orderMines:
-            inputList.append(self.pathToDistance(ownHero.getPos(), pMine))
+            inputList.append(self.pathDistanceTo(ownHero.pos, pMine))
+                
+        for pTavern in orderTaverns:
+            inputList.append(self.pathDistanceTo(ownHero.pos, pTavern))
 
-        for i in range(31 - len(inputList)):
-            inputList.append(0)
-            
+        
+
+
+##        print "Pre add 0"
+##        print len(inputList)
+
+        for i in range(44 - len(inputList)):
+            inputList.append(self.game.board_size*2)
+
+##        print "Len Mines:"
+##        print len(orderMines)
+##        print "Len taverns"
+##        print len(orderTaverns)
+##        print "len Heros"
+##        print len(orderHeros)
+##        print len(inputList)    
         return inputList
         
 
-    def determineClass(self, destPoint):
+    def determineClass(self, classes, destPoint):
         """returns the class the destPoint belongs to. The return value will be a number from 0 up to classes."""
+        #self.printMap()
         classVal = 0
-        ownPosition = self.game.hero.getPos()
-        distOfPoint = self.pathToDistance(ownPosition, destPoint)
+        ownPosition = self.game.hero.pos
+        distOfPoint = self.pathDistanceTo(ownPosition, destPoint)
 
         """all ordered by location"""
         orderHeros = self.orderHerosByDistance()
         orderTaverns = self.orderTavernsByDistance()
         orderMines = self.orderUnownedMinesByDistance()
+        #print "Mines:"
+        #print orderMines
+        #print "dest"
+        #print destPoint
+        
 
         for pHero in orderHeros:
-            if destPoint == pHero.getPos():
+            #print pHero.pos
+            if destPoint == pHero.pos:
                 return classVal
             else:
                 classVal += 1
 
-        for tavernPos in orderTaverns:
-            if destPoint == tavernPos:
+        
+        for minePos in orderMines:
+            #print minePos
+            if destPoint == minePos:
                 return classVal
             else:
                 classVal += 1
 
         classVal = 7
-        for minePos in orderMines:
-            if destPoint == minePos:
+        
+        for tavernPos in orderTaverns:
+            #print tavernPos
+            if destPoint == tavernPos:
                 return classVal
             else:
                 classVal += 1
+
+        
 
         return """CLASS VAL ERROR"""
 

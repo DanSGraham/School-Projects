@@ -75,7 +75,7 @@ class AStar(object):
         """
         #The only time the hero can move to a place is when the place is within the board, and either a blank space (" ") or herself (indicated by self.pos)
         if position[0] >= 0 and position[1] >= 0 and position[0] < len(self.board) and (position[1]) < len(self.board[0]) and \
-           (self.board[position[0]][position[1]] == " " or position == self.start or position in self.destList):
+           (self.board[position[0]][position[1]] == " " or self.board[position[0]][position[1]] == "X" or position == self.start or position in self.destList or self.board[position[0]][position[1]] == "H"):
             return True
         else:              
             return False
@@ -89,9 +89,9 @@ class AStar(object):
             self.expandNode(currNode)
             if self.frontier.empty():
                 return None
-            print "Current Expanded Nodes are: "
-            for i in range(len(self.getExplored())):
-                print self.expandedNodes[i]
+            #print "Current Expanded Nodes are: "
+            #for i in range(len(self.getExplored())):
+                #print self.expandedNodes[i]
             currNode = self.frontier.get()
             
             

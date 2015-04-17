@@ -4,7 +4,7 @@ import game
 import ai
 import json
 import random
-
+import time
 from pybrain.datasets    import ClassificationDataSet
 
 
@@ -43,23 +43,23 @@ def generateDataSet():
     outFile.close()
 
 
-    inputs = 31 #you will want to update this based on the state you have... ###I don't understand this comment. How do we update if we haven't calculated the state yet?
+    inputs = 44 #you will want to update this based on the state you have... ###I don't understand this comment. How do we update if we haven't calculated the state yet?
     classes= 11 #Not much reson to change this one, there are only 11 destinations.
     allData = ClassificationDataSet(inputs,1,nb_classes=classes)
-
+    start = time.clock()
     for i in range(len(inData)):
         b = loadBrain(inData[i].strip())
+        #inputs = len(b.g.heroes) - 1 + len(b.g.taverns_locs) + 4
         #calls functions inside of the ai object.  you will want to write these fcns. 
         ins = b.createInputs(inputs)
         klass = b.determineClass(classes,eval(outData[i].strip()))
         allData.addSample(ins,[klass])
         #if(i>40): break
-        if(i%100==0): print i,len(inData)
-        
+        if(i%100==0): print i,len(inData), "elapsed between sets", time.clock() - start
     
     return allData    
 
-import time    
+    
 def main():    
     start = time.clock()
     dataset = generateDataSet()
