@@ -1,5 +1,5 @@
 
-from Node import *
+from vinNode import *
 
 from aStar import *
 #from TEST_LIB import *
@@ -74,10 +74,9 @@ def expandOnceTestTwo():
         if node.getPos() == (2,5):
             endExpandedNodes = a.expandNode(node)
             endNodePositionList = []
-            #for endNodeExpandNode in endExpandedNodes:
-                #print endNodeExpandNode.getPos()
-                #endNodePositionList.append(endNodeExpandNode.getPos())
-            #assert (len(endNodePositionList) == 1 and (3,5) in endNodePositionList)
+            for endNodeExpandNode in endExpandedNodes:
+                endNodePositionList.append(endNodeExpandNode.getPos())
+            assert (len(endNodePositionList) == 1 and (3,5) in endNodePositionList)
 
 
 def expandOnlyToOneGoal():

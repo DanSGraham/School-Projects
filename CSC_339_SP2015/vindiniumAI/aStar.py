@@ -1,6 +1,6 @@
 import math
 import Queue
-from Node import *
+from vinNode import *
 import sys
 
 
@@ -8,8 +8,6 @@ import sys
 class AStar(object):
     
     #TODO
-    #Change the board read
-    #Make sure the search will stop if it runs out of nodes
 
     #board -  a list of lists to represent the costs of each tile in y,x format
     #start - (y,x) coordinates for the starting position
@@ -18,10 +16,17 @@ class AStar(object):
     def __init__(self,board,start,dest):
         "stores the information and sets up any initial data, see calcPath to actually calcualte the path.  Note that start is not in the list dest"
         self.board = board
+        for i in self.board:
+            print i
+            
+        print dest
         self.start = start
         self.destList = dest
         self.startNode = Node(self.start, None, 0, self.calcHeuristic(self.start))
         self.expandedNodes = []
+        self.expandedNodes.append(self.startNode)
+        self.frontierNodes = Queue.PriorityQueue()
+        self.frontierNodes.put(self.startNode)
 
 
     def calcHeuristic(self, pos):
@@ -36,46 +41,68 @@ class AStar(object):
         return lowestCost
 
 
-    def expandNode(self,node):
+    def expandNode(self, node):
+        #expand node may have an issue. Is a node expanded when it is calculated or when it generates children?
+        #Only node should be added to expanded nodes list
+        #Still giving issues.
         """generates the unvisited children of node.  If a child node has been generated (expanded) previously,
         it will not be generated again.  Returns all children nodes in an unordered list"""
         possibleDirections = node.getCardinalCoordinates()
         nodeList = []
+        alreadyPresent = False
+        for expanded in self.expandedNodes:
+            if node.getPos() == expanded.getPos():
+                alreadyPresent = True
+        if not alreadyPresent:
+            self.expandedNodes.append(node)
+            
+       
         for direction in possibleDirections:
-            if direction[0] >= 0 and direction[0] < len(self.board) and direction[1] >= 0 and direction[1] < len(self.board[0]):
-                newPNode = Node(direction, node, self.board[direction[0]][direction[1]], self.calcHeuristic(direction))
+            if self.canPassThrough(direction):
                 alreadyExpanded = False
                 for alreadyExpandedNode in self.expandedNodes:
                     if alreadyExpandedNode.getPos() == direction:
                         alreadyExpanded = True
                 if not alreadyExpanded:
+                    newPNode = Node(direction, node, self.board[direction[0]][direction[1]], self.calcHeuristic(direction))
                     nodeList.append(newPNode)
                     self.expandedNodes.append(newPNode)
-
+                    self.frontierNodes.put(newPNode)
+        print "Expansion of Node: ", node
+        for i in nodeList:
+            print i
         return nodeList
         
-        pass
 
+    def canPassThrough(self, position):
+        """Is it possible to pass through this the (y,x) position stored in position?
+           Returns False if there is anything in that position (mountain, mine, tavern, other heroes
+            Returns True if there is nothing there.  Note a hero can pass through themself.
+
+            Also Note: Any position that is not on the board should be deemed as impassible as well
+
+            Further Note: The end position can be anything as long as it is in the map.
+        """
+        if position[0] >= 0 and position[1] >= 0 and position[0] < len(self.board) and (position[1]) < len(self.board[0]):
+            return True
+        else:              
+            return False
 
 
     def calcPath(self):
         """calculates the path needed to reach the destination 
            returns the lowest cost path as linked list of Nodes (parent is the link)"""
-        pathQueue = Queue.PriorityQueue(-1)
-        currNode = self.startNode
-        self.expandedNodes.append(currNode)
+        currNode = self.frontierNodes.get()
         while not (currNode.getPos() in self.destList):
-            possibleNodes = self.expandNode(currNode)
-            for pNode in possibleNodes:
-                pathQueue.put((pNode.calcF(), pNode))
-            currNode = pathQueue.get()[1]
-            
+            self.expandNode(currNode)
+            currNode = self.frontierNodes.get()
+            print currNode.getPos(), currNode.getParent()
         return currNode
+
 
 
     def getExplored(self):
         "returns an unordered list of all explored(actually expanded) nodes during the calcPath calcuation"
-
         return self.expandedNodes
 
 
