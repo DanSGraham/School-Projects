@@ -39,15 +39,15 @@ def measuredLearning(ds):
     ###
     # This network has no hidden layters, you might need to add some
     ###
-    fnn = buildNetwork( trndata.indim, trndata.outdim, outclass=SoftmaxLayer )
+    fnn = buildNetwork( trndata.indim, 22, trndata.outdim, outclass=SoftmaxLayer )
     trainer = BackpropTrainer( fnn, verbose=True,dataset=trndata)
                                
     ####
     #   Alter this to figure out how many runs you want.  Best to start small and be sure that you see learning.
     #   Before you ramp it up.
     ###
-    for i in range(10):
-        trainer.trainEpochs(3)
+    for i in range(150):
+        trainer.trainEpochs(5)
    
         
         trnresult = percentError(trainer.testOnClassData(),trndata['class'] )

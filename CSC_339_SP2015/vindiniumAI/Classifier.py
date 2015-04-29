@@ -43,8 +43,8 @@ def generateDataSet():
     outFile.close()
 
 
-    inputs = 44 #you will want to update this based on the state you have... ###I don't understand this comment. How do we update if we haven't calculated the state yet?
-    classes= 11 #Not much reson to change this one, there are only 11 destinations.
+    inputs = 120 #you will want to update this based on the state you have... ###I don't understand this comment. How do we update if we haven't calculated the state yet?
+    classes= 11 #11 #Not much reson to change this one, there are only 11 destinations.
     allData = ClassificationDataSet(inputs,1,nb_classes=classes)
     start = time.clock()
     for i in range(len(inData)):
@@ -53,8 +53,11 @@ def generateDataSet():
         #calls functions inside of the ai object.  you will want to write these fcns. 
         ins = b.createInputs(inputs)
         klass = b.determineClass(classes,eval(outData[i].strip()))
+        expectedKlass = b.classInverse(klass)
+        #if expectedKlass != eval(outData[i].strip()):
+        #    print expectedKlass, eval(outData[i].strip())
         allData.addSample(ins,[klass])
-        #if(i>40): break
+        #if(i > 1000): break
         if(i%100==0): print i,len(inData), "elapsed between sets", time.clock() - start
     
     return allData    
